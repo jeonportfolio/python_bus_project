@@ -315,7 +315,7 @@
 
                     // XML 문서에서 'itemList' 태그를 모두 찾기
                     var positions = [];
-                    var bounds = new kakao.maps.LatLngBounds();
+                    var bounds = new kakao.maps.LatLngBounds(); // 경로를 한번에 보기 쉽게 지도를 움직여 주는 함수 
 
                     var routeItems = xmlDoc2.getElementsByTagName("itemList");     
                     for(var i=0; i < routeItems.length; i++) {
