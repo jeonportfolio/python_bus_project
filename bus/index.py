@@ -55,6 +55,23 @@ def get_route_by_station():
     return response.content, response.status_code  
 
 
+@app.route("/getStationByUid", methods=['POST'])
+def get_station_by_uid():
+    # POST 요청에서 JSON 데이터 추출
+    data = request.json
+    arsId = data['arsId']
+
+    # 외부 API로부터 데이터 가져오기
+    url = "http://ws.bus.go.kr/api/rest/stationinfo/getStationByUid"
+    params = {
+        'serviceKey': "nP48y1O6pt9zw6eUekNNCyiPVjqcECZPhaTgI49TzaXttCTKtRzhyBtVyZD//RVja9A5jf/lSMPEEeRN2KYOLA==",
+        'arsId': arsId,
+        'radius': "500"  #반경 (단위: 미터)
+    }
+
+    response = requests.get(url, params=params)
+    return response.content, response.status_code   
+
 @app.route("/getRoutePath", methods=['POST'])
 def get_route_path():
     # POST 요청에서 JSON 데이터 추출

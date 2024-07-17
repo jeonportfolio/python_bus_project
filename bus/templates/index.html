@@ -121,6 +121,35 @@
             return result;
         }        
 
+        function getStationByUid(arsId) {
+            var data = {
+                "arsId": arsId
+            };
+
+            var result = null; //결과를 저장할 변수
+
+            $.ajax({
+                url: '/getStationByUid',
+                type: 'POST',
+                contentType: 'application/json',
+                dataType: 'text',
+                data: JSON.stringify(data),
+                async: false, // 작업 편의를 위해 동기 요청으로 설정 (비동기는 이 함수 실행시에도 다른 코드가 실행됨)
+                success: function(response) {
+			        //성공할 경우
+                    result = response;
+                },
+                error: function(xhr, status, error) {
+		        // 오류 발생 시 실행될 코드
+	                console.error("오류 발생:", xhr, status, error);
+                }
+            });           
+            
+            //결과 반환
+            return result;
+        }        
+
+
         function getRoutePath(busRouteId) {
             var data = {
                 "busRouteId": busRouteId
@@ -262,7 +291,7 @@
 
         function displayBuswindow(marker, title) {
             var xmlString = getRouteByStationList(marker.arsId);
-            console.log(xmlString)
+            //console.log(xmlString)
 
             var parser = new DOMParser();
             var xmlDoc = parser.parseFromString(xmlString, "text/xml");
@@ -296,24 +325,24 @@
 
                 var busContent = "노선 이름: " + busRouteNm;
 
-                $("#tabs ul").append("<li data-busid='"+busRouteId+"'><a href='#tab-"+i+"'>"+busRouteNm+"</a></li>");
+                $("#tabs ul").append("<li data-busid='"+busRouteId+"' data-stationlat='"+marker.lat+"' data-stationlng='"+marker.lng+"'><a href='#tab-"+i+"'>"+busRouteNm+"</a></li>");
                 $("#tabs").append("<div id='tab-"+i+"'>"+busContent+"<div style='height:500px; width:100%' id='busMap_"+busRouteId+"'></div></div>");
 
                 //각 노선 정보를 콘솔에 출력해 보기
-                console.log("노선 약어: " + busRouteAbrv);
-                console.log("노선 ID: " + busRouteId);
-                console.log("노선 이름: " + busRouteNm);
-                console.log("노선 유형: " + busRouteType);
-                console.log("첫차 시간: " + firstBusTm);
-                console.log("첫차 시간(저상): " + firstBusTmLow);
-                console.log("막차 시간: " + lastBusTm);
-                console.log("막차 시간(저상): " + lastBusTmLow);
-                console.log("노선 길이: " + length + "km");
-                console.log("다음 버스: " + nextBus + "분 후");
-                console.log("시작 정류장: " + stBegin);
-                console.log("종료 정류장: " + stEnd);
-                console.log("배차 간격: " + term + "분");                
-            }            
+                //console.log("노선 약어: " + busRouteAbrv);
+                //console.log("노선 ID: " + busRouteId);
+                //console.log("노선 이름: " + busRouteNm);
+                //console.log("노선 유형: " + busRouteType);
+                //console.log("첫차 시간: " + firstBusTm);
+                //console.log("첫차 시간(저상): " + firstBusTmLow);
+                //console.log("막차 시간: " + lastBusTm);
+                //console.log("막차 시간(저상): " + lastBusTmLow);
+                //console.log("노선 길이: " + length + "km");
+                //console.log("다음 버스: " + nextBus + "분 후");
+                //console.log("시작 정류장: " + stBegin);
+                //console.log("종료 정류장: " + stEnd);
+                //console.log("배차 간격: " + term + "분");                
+            }           
 
             //노선 정보를 div 팝업으로 띄우기
             $("#busWindow").bPopup({
@@ -324,10 +353,47 @@
                 }
             });
 
+            var xmlString2 = getStationByUid(marker.arsId);
+            console.log(xmlString2);
+            var parser = new DOMParser();
+            var xmlDoc = parser.parseFromString(xmlString2, "text/xml");
+
+            var headerMsg = xmlDoc.getElementsByTagName("headerMsg")[0].childNodes[0].nodeValue;
+            if(headerMsg != "정상적으로 처리되었습니다.") {
+                //오류 상황
+                alert(headerMsg);
+                return false;
+            }            
+
+            // XML 문서에서 'itemList' 태그를 모두 찾기
+            var items = xmlDoc.getElementsByTagName("itemList");
+
+            // 각 itemList 요소에 대해 반복
+            for (var i = 0; i < items.length; i++) {
+                var busRouteId = items[i].getElementsByTagName("busRouteId")[0].textContent
+                var arrmsg1 = items[i].getElementsByTagName("arrmsg1")[0].textContent  //1번째 버스 도착정보
+
+                arrmsg1 = arrmsg1.replace([], ''); //a 태그 : 5분후[4번째]   ->  대괄호와 그 속의 내용 모두 제거하기
+
+                var liElements = document.querySelectorAll("li[data-busid]");
+                var targetLi = Array.from(liElements).find(li => li.getAttribute('data-busid') === busRouteId);
+                if(targetLi) {
+                    //a 태그 찾기
+                    var aTag = targetLi.querySelector('a');
+                    if(aTag) {
+                        aTag.innerHTML += "<Br>("+arrmsg1+")";
+                    }
+                }
+            }
+
+
+            // 노선탭이 활성화 되는 부분 
             $("#tabs").tabs({
                 activate: function(event, ui) {
                     var tabObj = $(ui.newTab);
                     var busRouteId = tabObj.data("busid");
+                    var stationLat = tabObj.data("stationlat");
+                    var stationLng = tabObj.data("stationlng");
                     console.log(busRouteId)
                     var xmlString2 = getRoutePath(busRouteId);
                     //console.log(xmlString2)

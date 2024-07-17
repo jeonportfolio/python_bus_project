@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+	<meta charset="UTF-8">
     <title>정류소 찾기</title>
     <style>
         /* 전체 페이지의 기본 스타일 설정 */
@@ -42,7 +43,9 @@
     <script src="https://code.jquery.com/ui/1.13.3/jquery-ui.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bPopup/0.11.0/jquery.bpopup.min.js" integrity="sha512-kmrY+BFhi6ywgfK8hW1ySM/KYU3xPd4elbMhORq3DhacwqmitFrf3GB2HpLj3srV1zFsqxvAcZ4qU+y+ym1Eeg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
-    <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=[카카오API키입력하세요]&libraries=services"></script>      
+    <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=1a0216d1315962ae0e74ab247c6e1de3&libraries=services"></script> 
+
+    <script type="text/javascript" src=""></script>      
     <script>
         var psStart = new kakao.maps.services.Places();
         var map = null;
@@ -72,7 +75,7 @@
             var result = null; //결과를 저장할 변수
 
             $.ajax({
-                url: '/getStationByPos',
+                url: '/getStationByPos.php',
                 type: 'POST',
                 contentType: 'application/json',
                 dataType: 'text',
@@ -101,7 +104,7 @@
             var result = null; //결과를 저장할 변수
 
             $.ajax({
-                url: '/getRouteByStation',
+                url: '/getRouteByStation.php',
                 type: 'POST',
                 contentType: 'application/json',
                 dataType: 'text',
@@ -129,7 +132,7 @@
             var result = null; //결과를 저장할 변수
 
             $.ajax({
-                url: '/getStationByUid',
+                url: '/getStationByUid.php',
                 type: 'POST',
                 contentType: 'application/json',
                 dataType: 'text',
@@ -158,7 +161,7 @@
             var result = null; //결과를 저장할 변수
 
             $.ajax({
-                url: '/getRoutePath',
+                url: '/getRoutePath.php',
                 type: 'POST',
                 contentType: 'application/json',
                 dataType: 'text',
@@ -186,7 +189,7 @@
             var result = null; //결과를 저장할 변수
 
             $.ajax({
-                url: '/getBusPosByRtid',
+                url: '/getBusPosByRtid.php',
                 type: 'POST',
                 contentType: 'application/json',
                 dataType: 'text',
