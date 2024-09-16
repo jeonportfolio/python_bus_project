@@ -411,127 +411,191 @@
                     var stationLat = tabObj.data("stationlat");
                     var stationLng = tabObj.data("stationlng");
                     console.log(busRouteId)
-                    var xmlString2 = getRoutePath(busRouteId);
-                    //console.log(xmlString2)
 
-                    var parser2 = new DOMParser();
-                    var xmlDoc2 = parser2.parseFromString(xmlString2, "text/xml");
-
-                    var headerMsg2 = xmlDoc2.getElementsByTagName("headerMsg")[0].childNodes[0].nodeValue;
-                    if(headerMsg2 != "정상적으로 처리되었습니다.") {
-                        //오류 상황
-                        alert(headerMsg2);
-                        return false;
-                    }            
-
-                    // XML 문서에서 'itemList' 태그를 모두 찾기
-                    var positions = [];
-                    var bounds = new kakao.maps.LatLngBounds(); // 경로를 한번에 보기 쉽게 지도를 움직여 주는 함수 
-
-                    var routeItems = xmlDoc2.getElementsByTagName("itemList");     
-                    for(var i=0; i < routeItems.length; i++) {
-                        var gpsX = routeItems[i].getElementsByTagName("gpsX")[0].textContent;  //경도
-                        var gpsY = routeItems[i].getElementsByTagName("gpsY")[0].textContent;   //위도
-                        var no = routeItems[i].getElementsByTagName("no")[0].textContent;   //순번
-                        positions.push({
-                            "latlng": new kakao.maps.LatLng(gpsY, gpsX),
-                            "no": no
-                        })
-                    }      
-
-                    var mapId = "busMap_"+busRouteId;
-
-                    var mapContainerTemp = document.getElementById(mapId), // 지도를 표시할 div 
-                        mapOptionTemp = { 
-                            center: new kakao.maps.LatLng(37.5664056, 126.9778222), // 지도의 중심좌표
-                            level: 3 // 지도의 확대 레벨
-                        };
-
-                    // 지도를 표시할 div와  지도 옵션으로  지도를 생성합니다
-                    var mapTemp = new kakao.maps.Map(mapContainerTemp, mapOptionTemp);        
-                    
-                    var linePath = [];
-
-                    for(var j=0; j < positions.length; j++) {
-/*                        var marker = new kakao.maps.Marker({
-                            "map": mapTemp,
-                            "position": positions[j].latlng
-                        });*/
-
-                        bounds.extend(positions[j].latlng);
-                        linePath.push(positions[j].latlng);
-                    }
-
-                    // Polyline을 생성합니다
-                    var polyline = new kakao.maps.Polyline({
-                        path: linePath, // 선을 구성하는 좌표배열
-                        strokeWeight: 5, // 선의 두께
-                        strokeColor: '#000000', // 선의 색깔
-                        strokeOpacity: 0.7, // 선의 불투명도
-                        strokeStyle: 'solid' // 선의 스타일
-                    });         
-                    
-                    polyline.setMap(mapTemp);
-
-                    mapTemp.setBounds(bounds);
-
-                    //노선 ID로 버스 위치 확인
-
-                    var xmlString2 = getBusPosByRtid(busRouteId);
-                    console.log(xmlString2)
-
-                    var parser2 = new DOMParser();
-                    var xmlDoc2 = parser2.parseFromString(xmlString2, "text/xml");
-
-                    var headerMsg2 = xmlDoc2.getElementsByTagName("headerMsg")[0].childNodes[0].nodeValue;
-                    if(headerMsg2 != "정상적으로 처리되었습니다.") {
-                        //오류 상황
-                        alert(headerMsg2);
-                        return false;
-                    }            
-
-                    // XML 문서에서 'itemList' 태그를 모두 찾기
-                    var positionsBus = [];
-                    var bounds = new kakao.maps.LatLngBounds();
-
-                    var routeItems = xmlDoc2.getElementsByTagName("itemList");     
-                    for(var i=0; i < routeItems.length; i++) {
-                        var gpsX = routeItems[i].getElementsByTagName("gpsX")[0].textContent;  //경도
-                        var gpsY = routeItems[i].getElementsByTagName("gpsY")[0].textContent;   //위도
-                        var plainNo = routeItems[i].getElementsByTagName("plainNo")[0].textContent;   //차량번호
-                        var vehId = routeItems[i].getElementsByTagName("vehId")[0].textContent;   //차량ID                        
-                        positionsBus.push({
-                            "latlng": new kakao.maps.LatLng(gpsY, gpsX),
-                            "no": plainNo
-                        })
-                    }    
-
-                    //버스 이미지 마커 설정
-                    var imageSrc = "/templates/bus.png";                      
-                    var imageSize = new kakao.maps.Size(20, 20);  //가로 세로 20픽셀 크기
-                    var imageOption = {offset: new kakao.maps.Point(0,0)}; //마거 이미지 옵션으로, 이미지 안의 좌표 설정
-
-                    var markerImage = new kakao.maps.MarkerImage(imageSrc, imageSize, imageOption);
-
-                    for(var i=0; i < positionsBus.length; i++) {
-                        var position = positionsBus[i];
-
-                        //이미지 마커를 생성하여 지도에 표시
-                        var marker = new kakao.maps.Marker({
-                            map: mapTemp,
-                            position: position.latlng,
-                            image: markerImage
-                        });
-                    }
-
-                    var positionStation = new kakao.maps.LatLng(stationLat, stationLng);
-
-                    var marker = new kakao.maps.Marker({
-                        map: mapTemp,
-                        position: positionStation
-                    });
+                    tabActivate(busRouteId, stationLat, stationLng);
                 }
             });
+        }
+
+  
+        function tabActivate(busRouteId, stationLat, stationLng) {
+            var xmlString2 = getRoutePath(busRouteId);
+            //console.log(xmlString2)
+
+            var parser2 = new DOMParser();
+            var xmlDoc2 = parser2.parseFromString(xmlString2, "text/xml");
+
+            var headerMsg2 = xmlDoc2.getElementsByTagName("headerMsg")[0].childNodes[0].nodeValue;
+            if(headerMsg2 != "정상적으로 처리되었습니다.") {
+                //오류 상황
+                alert(headerMsg2);
+                return false;
+            }            
+
+            // XML 문서에서 'itemList' 태그를 모두 찾기
+            var positions = [];
+            var bounds = new kakao.maps.LatLngBounds();
+
+            var routeItems = xmlDoc2.getElementsByTagName("itemList");     
+            for(var i=0; i < routeItems.length; i++) {
+                var gpsX = routeItems[i].getElementsByTagName("gpsX")[0].textContent;  //경도
+                var gpsY = routeItems[i].getElementsByTagName("gpsY")[0].textContent;   //위도
+                var no = routeItems[i].getElementsByTagName("no")[0].textContent;   //순번
+                positions.push({
+                    "latlng": new kakao.maps.LatLng(gpsY, gpsX),
+                    "no": no
+                })
+            }      
+
+            var mapId = "busMap_"+busRouteId;
+
+            var mapContainerTemp = document.getElementById(mapId), // 지도를 표시할 div 
+                mapOptionTemp = { 
+                    center: new kakao.maps.LatLng(37.5664056, 126.9778222), // 지도의 중심좌표
+                    level: 3 // 지도의 확대 레벨
+                };
+
+            // 지도를 표시할 div와  지도 옵션으로  지도를 생성합니다
+            var mapTemp = new kakao.maps.Map(mapContainerTemp, mapOptionTemp);        
+            
+            var linePath = [];
+
+            for(var j=0; j < positions.length; j++) {
+/*                        var marker = new kakao.maps.Marker({
+                    "map": mapTemp,
+                    "position": positions[j].latlng
+                });*/
+
+                bounds.extend(positions[j].latlng);
+                linePath.push(positions[j].latlng);
+            }
+
+            // Polyline을 생성합니다
+            var polyline = new kakao.maps.Polyline({
+                path: linePath, // 선을 구성하는 좌표배열
+                strokeWeight: 5, // 선의 두께
+                strokeColor: '#000000', // 선의 색깔
+                strokeOpacity: 0.7, // 선의 불투명도
+                strokeStyle: 'solid' // 선의 스타일
+            });         
+            
+            polyline.setMap(mapTemp);
+
+            mapTemp.setBounds(bounds);
+
+            //노선ID로 버스 위치 확인
+            var xmlString2 = getBusPosByRtid(busRouteId);
+            console.log(xmlString2)
+
+            var parser2 = new DOMParser();
+            var xmlDoc2 = parser2.parseFromString(xmlString2, "text/xml");
+
+            var headerMsg2 = xmlDoc2.getElementsByTagName("headerMsg")[0].childNodes[0].nodeValue;
+            if(headerMsg2 != "정상적으로 처리되었습니다.") {
+                //오류 상황
+                alert(headerMsg2);
+                return false;
+            }            
+
+            // XML 문서에서 'itemList' 태그를 모두 찾기
+            var positionsBus = [];
+            var bounds = new kakao.maps.LatLngBounds();
+
+            var routeItems = xmlDoc2.getElementsByTagName("itemList");     
+            for(var i=0; i < routeItems.length; i++) {
+                var gpsX = routeItems[i].getElementsByTagName("gpsX")[0].textContent;  //경도
+                var gpsY = routeItems[i].getElementsByTagName("gpsY")[0].textContent;   //위도
+                var plainNo = routeItems[i].getElementsByTagName("plainNo")[0].textContent;   //차량번호
+                var vehId = routeItems[i].getElementsByTagName("vehId")[0].textContent;   //차량ID                        
+                positionsBus.push({
+                    "latlng": new kakao.maps.LatLng(gpsY, gpsX),
+                    "no": plainNo,
+                    "vehId": vehId //버스ID 저장
+                })
+            }    
+
+            //버스 이미지 마커 설정
+            var imageSrc = "/templates/bus.png";                      
+            var imageSize = new kakao.maps.Size(20, 20);  //가로 세로 20픽셀 크기
+            var imageOption = {offset: new kakao.maps.Point(0,0)}; //마거 이미지 옵션으로, 이미지 안의 좌표 설정
+
+            var markerImage = new kakao.maps.MarkerImage(imageSrc, imageSize, imageOption);
+
+            //예약 버스 이미지 마커 설정
+            var imageSrc2 = "/templates/bus2.png";                      
+            var imageSize2 = new kakao.maps.Size(20, 20);  //가로 세로 20픽셀 크기
+            var imageOption2 = {offset: new kakao.maps.Point(0,0)}; //마거 이미지 옵션으로, 이미지 안의 좌표 설정
+
+            var markerImage2 = new kakao.maps.MarkerImage(imageSrc2, imageSize2, imageOption2);            
+
+            for(var i=0; i < positionsBus.length; i++) {
+                var position = positionsBus[i];
+                var vehId = positionsBus[i].vehId;
+
+                var reservationBuses = JSON.parse(localStorage.getItem("reservationBus")); // reservationBuses == 배열
+
+                var isSame = false; //예약 버스와 동일한지 true, false로 판단함. 
+                for(var j=0; j < reservationBuses.length; j++) {
+                    var bus = reservationBuses[j];
+                    var busArray = bus.split("|");
+                    var vehIdTemp = busArray[0];
+                    var busRouteIdTemp = busArray[1];
+
+                    if(vehIdTemp == vehId && busRouteId == busRouteIdTemp) {  //예약 버스와 동일하다면 isSame을 true로 바꿈
+                        isSame = true;
+                    }
+                }
+
+                var marker = null;
+                if(isSame == false)  {
+                    //이미지 마커를 생성하여 지도에 표시
+                    marker = new kakao.maps.Marker({
+                        map: mapTemp,
+                        position: position.latlng,
+                        image: markerImage
+                    });
+                }
+                else{
+                    marker = new kakao.maps.Marker({
+                        map: mapTemp,
+                        position: position.latlng,
+                        image: markerImage2
+                    });
+                }
+
+                (function(marker, vehId, busRouteId, stationLat, stationLng) {
+                    kakao.maps.event.addListener(marker, 'click', function(){
+                        //alert("버스 ID:" + vehId)
+                        if(confirm("예약 버스로 지정하시겠습니까?")) {
+                            //확인(예)를 누른 경우.
+                            var reservationBusArray = localStorage.getItem("reservationBus");
+                            if(reservationBusArray == null) { //아직 추가한 적 없어, 비어 있음
+                                reservationBusArray = []; //배열형태로 초기화
+                                reservationBusArray.push(vehId + "|" + busRouteId);
+                                localStorage.setItem("reservationBus", JSON.stringify(reservationBusArray));
+                            }
+                            else { //이미 배열이 존재하는 경우..
+                                reservationBusArray = JSON.parse(reservationBusArray); //기존 배열을 가져옴
+                                reservationBusArray.push(vehId + "|" + busRouteId);  //기존 배열에 버스ID 하나 더 추가
+                                localStorage.setItem("reservationBus", JSON.stringify(reservationBusArray));   //저장해두기
+                            }
+                            console.log(localStorage.getItem("reservationBus"));
+
+                            tabActivate(busRouteId, stationLat, stationLng);
+                        }
+                    });
+                })(marker, vehId, busRouteId, stationLat, stationLng);
+            }
+
+            var positionStation = new kakao.maps.LatLng(stationLat, stationLng);
+
+            var marker = new kakao.maps.Marker({
+                map: mapTemp,
+                position: positionStation
+            });
+
+
+            addImageArriveMarker(mapTemp, arriveLat, arriveLng);            
         }
 
         // 지도 위에 표시되고 있는 마커를 모두 제거합니다
@@ -652,6 +716,26 @@
             });
         }
 
+        
+        function addImageArriveMarker(map2, latitude, lognitude) {  //이미지 마커를 map2에 추가하는 함수
+            var markerPosition = new kakao.maps.LatLng(latitude, lognitude); //위도와 경도를 저장
+
+            var imageSrc = "/templates/arrive.png";
+            var imageSize = new kakao.maps.Size(30,30);  //폭, 높이 제공할 것
+            var imageOption = null;
+
+            var markerImage = new kakao.maps.MarkerImage(imageSrc, imageSize, imageOption);
+
+            var marker = new kakao.maps.Marker({
+                position: markerPosition,
+                image: markerImage
+            });
+
+            marker.setMap(map2);
+            return marker;
+        }
+
+
         function searchArriveWindow(){
            var tbKeywordWindow = $("#tbKeywordWindow").val();
            tbKeywordWindow = $.trim(tbKeywordWindow);//공백처리를 위함 
@@ -714,6 +798,7 @@
         <div style="text-align: center;">
              <input type="text" value="" placeholder="주소 또는 키워드 입력" style="width: 200px; height: 30px;" id="tbKeywordWindow">
              <button class="find-button" style="width: 120px; margin-left: 6px;" onclick="searchArriveWindow();">검색</button>
+             (지도상 원하는 목적지 지점을 더블클릭하세요)
         </div>    
         <div id="mapArriveWindow" style="width: 100%; height: 550px;"></div>
     </div>
