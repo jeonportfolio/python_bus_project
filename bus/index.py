@@ -6,18 +6,21 @@ app = Flask(__name__)
 app.config["SEND_FILE_MAX_AGE_DEFAULT"] = 0 #정적파일캐싱 방지
 app.config["TEMPLATES_AUTO_RELOAD"] = True #flask 서버에서는 바로 업데이트가 안되기 때문에 자동 업데이트 설정 
 
+
 @app.route("/")
 def home():
     return render_template("index.html")
 
+#사진첨부가 가능하게함
 @app.route("/templates/<path:filename>")
 def template_files(filename):
     # templates 디렉토리 안의 파일을 안전하게 서비스
     return send_from_directory(os.path.join(app.root_path, 'templates'), filename)
 
-
-if __name__ == "__main__":
+# 안정성 체크
+if __name__ == "__main__": 
     app.run(debug=True)
+
 
 @app.route("/getStationByPos", methods=['POST'])
 def get_station_by_pos():
@@ -38,7 +41,7 @@ def get_station_by_pos():
     response = requests.get(url, params=params)
     return response.content, response.status_code   
 
-@app.route("/getRouteByStation", methods=['POST'])
+@app.route("/getRouteByStation", methods=['POST']) # 노선조회(정류소 고유번호)
 def get_route_by_station():
     # POST 요청에서 JSON 데이터 추출
     data = request.json
@@ -72,7 +75,7 @@ def get_station_by_uid():
     response = requests.get(url, params=params)
     return response.content, response.status_code   
 
-@app.route("/getRoutePath", methods=['POST'])
+@app.route("/getRoutePath", methods=['POST']) #노선경로
 def get_route_path():
     # POST 요청에서 JSON 데이터 추출
     data = request.json
@@ -90,7 +93,7 @@ def get_route_path():
     return response.content, response.status_code      
 
 
-@app.route("/getBusPosByRtid", methods=['POST'])
+@app.route("/getBusPosByRtid", methods=['POST']) #버스 실시간 위치 확인
 def get_bus_pos_rtid():
     # POST 요청에서 JSON 데이터 추출
     data = request.json
@@ -98,6 +101,25 @@ def get_bus_pos_rtid():
 
     # 외부 API로부터 데이터 가져오기
     url = "http://ws.bus.go.kr/api/rest/buspos/getBusPosByRtid"
+    params = {
+        'serviceKey': "nP48y1O6pt9zw6eUekNNCyiPVjqcECZPhaTgI49TzaXttCTKtRzhyBtVyZD//RVja9A5jf/lSMPEEeRN2KYOLA==",
+        'busRouteId': busRouteId,
+    }
+
+    response = requests.get(url, params=params)
+    return response.content, response.status_code          
+
+
+#버스 노선별 경유 정류소 조회 서비스
+
+@app.route("/getStationsByRouteList", methods=['POST']) 
+def get_station_route_list():
+    # POST 요청에서 JSON 데이터 추출
+    data = request.json
+    busRouteId = data['busRouteId']
+
+    # 외부 API로부터 데이터 가져오기
+    url = "http://ws.bus.go.kr/api/rest/busRouteInfo/getStaionByRoute"
     params = {
         'serviceKey': "nP48y1O6pt9zw6eUekNNCyiPVjqcECZPhaTgI49TzaXttCTKtRzhyBtVyZD//RVja9A5jf/lSMPEEeRN2KYOLA==",
         'busRouteId': busRouteId,
